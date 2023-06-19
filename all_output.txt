@@ -1,0 +1,204 @@
+[game.js]
+```javascript
+class Game {
+  constructor(width, height) {
+    this.width = width;
+    this.height = height;
+    this.score = 0;
+    this.snake = new Snake(Math.floor(width / 2), Math.floor(height / 2), 3);
+    this.food = null;
+    this.interval = null;
+    this.paused = false;
+    this.game_over = false;
+  }
+
+  start() {
+    this.draw();
+    this.interval = setInterval(() => {
+      if (!this.paused && !this.game_over) {
+        this.update();
+        this.draw();
+      }
+    }, 100);
+  }
+
+  stop() {
+    clearInterval(this.interval);
+  }
+
+  pause() {
+    this.paused = true;
+  }
+
+  resume() {
+    this.paused = false;
+  }
+
+  update() {
+    this.snake.move();
+    if (this.snake.collides_with_wall(this.width, this.height) || this.snake.collides_with_body()) {
+      this.game_over = true;
+    }
+    if (this.snake.collides_with(this.food)) {
+      this.snake.grow();
+      this.score++;
+      this.food = null;
+    }
+    if (this.food === null) {
+      this.food = new Food(Math.floor(Math.random() * this.width), Math.floor(Math.random() * this.height));
+    }
+  }
+
+  draw() {
+    // code to draw the game on the screen
+  }
+
+  handle_input(event) {
+    switch (event.keyCode) {
+      case 37: // left arrow key
+        this.snake.change_direction('left');
+        break;
+      case 38: // up arrow key
+        this.snake.change_direction('up');
+        break;
+      case 39: // right arrow key
+        this.snake.change_direction('right');
+        break;
+      case 40: // down arrow key
+        this.snake.change_direction('down');
+        break;
+      case 32: // spacebar
+        if (this.game_over) {
+          this.restart();
+        } else if (this.paused) {
+          this.resume();
+        } else {
+          this.pause();
+        }
+        break;
+    }
+  }
+
+  restart() {
+    this.score = 0;
+    this.snake = new Snake(Math.floor(this.width / 2), Math.floor(this.height / 2), 3);
+    this.food = null;
+    this.game_over = false;
+  }
+}
+```
+
+[snake.js]
+```javascript
+class Snake {
+  constructor(x, y, length) {
+    this.body = [];
+    for (let i = 0; i < length; i++) {
+      this.body.push({x: x - i, y: y});
+    }
+    this.direction = 'right';
+  }
+
+  move() {
+    const head = {x: this.body[0].x, y: this.body[0].y};
+    switch (this.direction) {
+      case 'left':
+        head.x--;
+        break;
+      case 'up':
+        head.y--;
+        break;
+      case 'right':
+        head.x++;
+        break;
+      case 'down':
+        head.y++;
+        break;
+    }
+    this.body.pop();
+    this.body.unshift(head);
+  }
+
+  grow() {
+    const tail = {x: this.body[this.body.length - 1].x, y: this.body[this.body.length - 1].y};
+    this.body.push(tail);
+  }
+
+  change_direction(direction) {
+    if (this.direction === 'left' && direction === 'right' ||
+        this.direction === 'up' && direction === 'down' ||
+        this.direction === 'right' && direction === 'left' ||
+        this.direction === 'down' && direction === 'up') {
+      return;
+    }
+    this.direction = direction;
+  }
+
+  collides_with_wall(width, height) {
+    const head = this.body[0];
+    return head.x < 0 || head.x >= width || head.y < 0 || head.y >= height;
+  }
+
+  collides_with_body() {
+    const head = this.body[0];
+    for (let i = 1; i < this.body.length; i++) {
+      if (head.x === this.body[i].x && head.y === this.body[i].y) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  collides_with(other) {
+    const head = this.body[0];
+    return head.x === other.x && head.y === other.y;
+  }
+}
+```
+
+[food.js]
+```javascript
+class Food {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+  }
+
+  draw() {
+    // code to draw the food on the screen
+  }
+
+  collides_with(other) {
+    return this.x === other.x && this.y === other.y;
+  }
+}
+```
+
+[index.html]
+```html
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Snake Game</title>
+    <style>
+      /* CSS styles for the game */
+    </style>
+  </head>
+  <body>
+    <canvas id="canvas"></canvas>
+    <script src="snake.js"></script>
+    <script src="food.js"></script>
+    <script src="game.js"></script>
+    <script>
+      const canvas = document.getElementById('canvas');
+      const game = new Game(20, 20);
+
+      document.addEventListener('keydown', (event) => {
+        game.handle_input(event);
+      });
+
+      game.start();
+    </script>
+  </body>
+</html>
+```

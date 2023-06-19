@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Snake Game</title>
+    <style>
+      /* CSS styles for the game */
+    </style>
+  </head>
+  <body>
+    <h2>Marża ZEME: <span id="counter" style="color: navy"></span> PLN Ostatnia oferta:  <span id="lastCount"></span>PLN </h2>
+    <canvas id="canvas" width="800" height="800"></canvas>
+
+    <script src="snake.js"></script>
+    <script src="food.js"></script>
+    <script src="game.js"></script>
+    <script>
+      const canvas = document.getElementById('canvas');
+      const game = new Game(12, 12);
+
+      document.addEventListener('keydown', (event) => {
+        game.handle_input(event);
+      });
+
+      game.start();
+    </script>
+  </body>
+</html>
